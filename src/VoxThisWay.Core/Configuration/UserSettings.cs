@@ -25,4 +25,7 @@ public sealed class UserSettings
 
     [JsonPropertyName("hotkeyUseWin")]
     public bool HotkeyUseWin { get; set; }
+
+    [JsonPropertyName("speechEngine")]
+    public SpeechEngineKind? SpeechEngine { get; set; }
 }

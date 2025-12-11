@@ -12,14 +12,33 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,12">
             <TextBlock Text="Input device" FontWeight="Bold" Margin="0,0,0,4" />
-            <ComboBox x:Name="DeviceCombo" Width="350" DisplayMemberPath="DisplayName" />
+            <DockPanel>
+                <ComboBox x:Name="DeviceCombo" Width="300" DisplayMemberPath="DisplayName" />
+                <Button Content="Test" Width="80" Margin="8,0,0,0" Click="TestDevice_Click" />
+            </DockPanel>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,0,0,12">
+            <TextBlock Text="Speech engine" FontWeight="Bold" Margin="0,0,0,4" />
+            <ComboBox x:Name="EngineCombo" Width="350" SelectionChanged="EngineCombo_SelectionChanged">
+                <ComboBoxItem x:Name="WhisperEngineItem" Content="Whisper (local)" Tag="WhisperLocal" />
+                <ComboBoxItem x:Name="AzureEngineItem" Content="Azure Speech" Tag="Azure" />
+            </ComboBox>
+
+            <StackPanel x:Name="AzurePanel" Orientation="Vertical" Margin="0,8,0,0" Visibility="Collapsed">
+                <TextBlock Text="Azure Speech API key" Margin="0,0,0,4" />
+                <TextBlock x:Name="AzureKeySummary" Margin="0,0,0,4" Foreground="Gray" />
+                <PasswordBox x:Name="AzureKeyBox" Width="350" />
+                <TextBlock Text="Leave blank to keep the existing key." Margin="0,4,0,0" Foreground="Gray" FontStyle="Italic" />
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0,0,0,12">
             <TextBlock Text="Push-to-talk hotkey" FontWeight="Bold" Margin="0,0,0,4" />
             <DockPanel>
                 <TextBox x:Name="HotkeyTextBox" Width="250" IsReadOnly="True" PreviewKeyDown="HotkeyTextBox_PreviewKeyDown" />
@@ -27,7 +46,7 @@
             </DockPanel>
         </StackPanel>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Save" Width="80" Margin="0,0,8,0" Click="Save_Click" />
             <Button Content="Cancel" Width="80" Click="Cancel_Click" />
         </StackPanel>

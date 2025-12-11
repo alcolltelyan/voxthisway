@@ -52,9 +52,12 @@ public sealed class TranscriptionSessionManager : ITranscriptionSessionManager, 
                 return;
             }
 
-            var deviceId = _userSettingsStore.Current.AudioInputDeviceId ?? string.Empty;
+            var settings = _userSettingsStore.Current;
+            var deviceId = settings.AudioInputDeviceId ?? string.Empty;
+            var engineKind = settings.SpeechEngine ?? _engineOptions.CurrentValue.ActiveEngine;
+
             var audioOptions = new AudioCaptureOptions(deviceId, _defaultFormat, AutoGainControl: false);
-            _activeTranscriber = _transcriberFactory.Create(_engineOptions.CurrentValue.ActiveEngine);
+            _activeTranscriber = _transcriberFactory.Create(engineKind);
             _activeTranscriber.TranscriptAvailable += HandleTranscriptAvailable;
 
             await _activeTranscriber.StartAsync(
