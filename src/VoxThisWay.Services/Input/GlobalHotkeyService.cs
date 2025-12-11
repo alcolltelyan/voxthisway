@@ -190,11 +190,6 @@ public sealed class GlobalHotkeyService : IHotkeyService
         _requireAlt = settings.HotkeyUseAlt;
         _requireShift = settings.HotkeyUseShift;
         _requireWin = settings.HotkeyUseWin;
-
-        if (!_requireCtrl && !_requireAlt && !_requireShift && !_requireWin)
-        {
-            _requireCtrl = true;
-        }
     }
 
     private string FormatHotkey()

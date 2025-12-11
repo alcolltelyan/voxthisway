@@ -33,7 +33,7 @@ public sealed class TextInjectionService : ITextInjectionService
             return Task.CompletedTask;
         }
 
-        _logger.LogInformation("Injecting text. TotalLength={TotalLength}, DiffLength={DiffLength}, DiffPreview=\"{Preview}\"", text.Length, diffText.Length, Truncate(diffText, 100));
+        _logger.LogDebug("Injecting text. TotalLength={TotalLength}, DiffLength={DiffLength}, DiffPreview=\"{Preview}\"", text.Length, diffText.Length, Truncate(diffText, 100));
 
         try
         {

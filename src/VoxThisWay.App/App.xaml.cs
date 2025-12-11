@@ -42,6 +42,7 @@ public partial class App : Application
         var textInjectionService = _host.Services.GetRequiredService<ITextInjectionService>();
         var sessionManager = _host.Services.GetRequiredService<ITranscriptionSessionManager>();
         var hotkeyService = _host.Services.GetRequiredService<IHotkeyService>();
+        var processingIndicatorWindow = new ProcessingIndicatorWindow();
 
         trayService.Initialize(new TrayMenuActions(
             listeningService.RequestStart,
@@ -69,6 +70,19 @@ public partial class App : Application
         {
             var status = isListening ? "Listening…" : "Idle";
             trayService.UpdateStatus($"VoxThisWay — {status}");
+
+            Dispatcher.Invoke(() =>
+            {
+                if (isListening)
+                {
+                    processingIndicatorWindow.Start();
+                }
+                else
+                {
+                    processingIndicatorWindow.Stop();
+                }
+            });
+
             if (isListening)
             {
                 SystemSounds.Asterisk.Play();
@@ -111,8 +125,8 @@ public partial class App : Application
     private static void ConfigureLogging()
     {
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .MinimumLevel.Information()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .WriteTo.File(
                 System.IO.Path.Combine(AppDirectories.LogsDirectory, "voxthisway.log"),
                 rollingInterval: RollingInterval.Day,

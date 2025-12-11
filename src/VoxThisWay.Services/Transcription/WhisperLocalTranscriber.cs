@@ -43,7 +43,7 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
         _buffer.Dispose();
         _buffer = new MemoryStream();
         _isRunning = true;
-        _logger.LogInformation("Whisper local transcriber initialized with model {Model}.", _options.ResolveModelPath());
+        _logger.LogInformation("Whisper local transcriber initialized.");
         return Task.CompletedTask;
     }
 
@@ -62,19 +62,19 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
             }
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Whisper StopAsync invoked. RemainingBufferBytes={RemainingBytes}, ThresholdBytes={ThresholdBytes}",
             remainingLength,
             _chunkBytesThreshold);
 
         if (remaining is not null)
         {
-            _logger.LogInformation("Whisper StopAsync flushing remaining buffer. Bytes={Bytes}", remaining.Length);
+            _logger.LogDebug("Whisper StopAsync flushing remaining buffer. Bytes={Bytes}", remaining.Length);
             await ProcessChunkAsync(remaining, _currentFormat, CancellationToken.None);
         }
         else
         {
-            _logger.LogInformation("Whisper StopAsync: no remaining buffer to flush.");
+            _logger.LogDebug("Whisper StopAsync: no remaining buffer to flush.");
         }
     }
 
@@ -104,7 +104,7 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
 
     private async Task ProcessChunkAsync(byte[] chunk, AudioFormat format, CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
+        _logger.LogDebug(
             "ProcessChunkAsync invoked. ChunkBytes={ChunkBytes}, HasConfig={HasConfig}",
             chunk.Length,
             _config is not null);
@@ -179,7 +179,7 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
 
             var startTime = DateTimeOffset.UtcNow;
             process.Start();
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Whisper process started for chunk {ChunkId}. Pid={Pid}",
                 chunkId,
                 process.Id);
@@ -188,7 +188,7 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
             await process.WaitForExitAsync(cancellationToken);
 
             var elapsed = DateTimeOffset.UtcNow - startTime;
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Whisper process exited for chunk {ChunkId}. ExitCode={ExitCode}, DurationMs={DurationMs}",
                 chunkId,
                 process.ExitCode,
@@ -203,7 +203,7 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
             var rawTranscript = await ReadTranscriptAsync(outputPath ?? string.Empty, stdout.ToString(), cancellationToken);
             var transcriptText = NormalizeTranscript(rawTranscript);
 
-            _logger.LogInformation("Whisper chunk {ChunkId} completed. ExitCode={ExitCode}, TranscriptLength={Length}", chunkId, process.ExitCode, transcriptText?.Length ?? 0);
+            _logger.LogDebug("Whisper chunk {ChunkId} completed. ExitCode={ExitCode}, TranscriptLength={Length}", chunkId, process.ExitCode, transcriptText?.Length ?? 0);
 
             if (!string.IsNullOrWhiteSpace(transcriptText))
             {
