@@ -344,7 +344,6 @@ public partial class App : Application
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            .MinimumLevel.Override("VoxThisWay.Services.Transcription", LogEventLevel.Debug)
             .WriteTo.File(
                 System.IO.Path.Combine(AppDirectories.LogsDirectory, "voxthisway.log"),
                 rollingInterval: RollingInterval.Day,
