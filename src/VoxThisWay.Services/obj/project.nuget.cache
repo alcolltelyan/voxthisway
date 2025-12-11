@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "dgSpecHash": "2JV9XilhN+g=",
+  "success": true,
+  "projectFilePath": "D:\\Projects\\voxthisway\\src\\VoxThisWay.Services\\VoxThisWay.Services.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\telya\\.nuget\\packages\\azure.core\\1.44.1\\azure.core.1.44.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\microsoft.cognitiveservices.speech\\1.47.0\\microsoft.cognitiveservices.speech.1.47.0.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.1\\microsoft.extensions.dependencyinjection.abstractions.10.0.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.1\\microsoft.extensions.logging.abstractions.10.0.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\microsoft.extensions.options\\10.0.1\\microsoft.extensions.options.10.0.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.1\\microsoft.extensions.primitives.10.0.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\naudio\\2.2.1\\naudio.2.2.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\naudio.asio\\2.2.1\\naudio.asio.2.2.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\naudio.core\\2.2.1\\naudio.core.2.2.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\naudio.midi\\2.2.1\\naudio.midi.2.2.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\naudio.wasapi\\2.2.1\\naudio.wasapi.2.2.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\naudio.winforms\\2.2.1\\naudio.winforms.2.2.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\naudio.winmm\\2.2.1\\naudio.winmm.2.2.1.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\system.clientmodel\\1.1.0\\system.clientmodel.1.1.0.nupkg.sha512",
+    "C:\\Users\\telya\\.nuget\\packages\\system.memory.data\\6.0.0\\system.memory.data.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

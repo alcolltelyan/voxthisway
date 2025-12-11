@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "VoxThisWay.Interop/1.0.0": {
+        "dependencies": {
+          "VoxThisWay.Core": "1.0.0"
+        },
+        "runtime": {
+          "VoxThisWay.Interop.dll": {}
+        }
+      },
+      "VoxThisWay.Core/1.0.0": {
+        "runtime": {
+          "VoxThisWay.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "VoxThisWay.Interop/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "VoxThisWay.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
