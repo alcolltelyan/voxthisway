@@ -118,13 +118,14 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
             return;
         }
         string? wavPath = null;
+        string? outputPrefix = null;
         string? outputPath = null;
         try
         {
             var chunkId = Interlocked.Increment(ref _chunkCounter);
-            var basePath = Path.Combine(AppDirectories.TempDirectory, $"chunk_{chunkId}_{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}");
-            wavPath = $"{basePath}.wav";
-            outputPath = $"{basePath}.txt";
+            outputPrefix = Path.Combine(AppDirectories.TempDirectory, $"chunk_{chunkId}_{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}");
+            wavPath = $"{outputPrefix}.wav";
+            outputPath = $"{outputPrefix}.txt";
 
             _logger.LogDebug("Writing WAV file for chunk {ChunkId}. Path={Path}, Bytes={Bytes}", chunkId, wavPath, chunk.Length);
             WriteWaveFile(wavPath, chunk, format);
@@ -141,7 +142,7 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
                 throw new FileNotFoundException($"Whisper model not found at {_options.ResolveModelPath()}");
             }
 
-            var args = BuildArguments(wavPath, outputPath, _config.Language);
+            var args = BuildArguments(wavPath, outputPrefix, _config.Language);
 
             _logger.LogDebug(
                 "Preparing Whisper process for chunk {ChunkId}. ExecPath={ExecPath}, Args={Args}",
@@ -248,12 +249,13 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
         }
     }
 
-    private string BuildArguments(string wavPath, string outputPath, string language)
+    private string BuildArguments(string wavPath, string outputPrefix, string language)
     {
         var sb = new StringBuilder();
         sb.Append($"--model \"{_options.ResolveModelPath()}\" ");
         sb.Append($"--language {language} ");
-        sb.Append($"--output-txt \"{outputPath}\" ");
+        sb.Append("--output-txt ");
+        sb.Append($"--output-file \"{outputPrefix}\" ");
         if (!string.IsNullOrWhiteSpace(_options.AdditionalArguments))
         {
             sb.Append(_options.AdditionalArguments);
