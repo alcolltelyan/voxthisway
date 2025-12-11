@@ -335,4 +335,15 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
         {
             File.Delete(path);
         }
-    
+        catch
+        {
+            // ignore cleanup failures
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await StopAsync();
+        _buffer.Dispose();
+    }
+}
