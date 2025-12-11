@@ -8,6 +8,9 @@ publish/
 [Bb]uilds/
 artifacts/
 
+# Whisper model binaries (user-provided, large files)
+Speech/Models/*.bin
+
 # Visual Studio
 .vs/
 *.suo

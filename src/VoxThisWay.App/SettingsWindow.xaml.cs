@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Navigation;
 using VoxThisWay.Core.Audio;
 using VoxThisWay.Core.Configuration;
 using VoxThisWay.Core.Secrets;
@@ -53,6 +54,18 @@ public partial class SettingsWindow : Window
         if (selected is not null)
         {
             DeviceCombo.SelectedItem = selected;
+        }
+
+        // Initialize Whisper model selection (default to Tiny if unset)
+        var modelKind = currentSettings.WhisperModel ?? WhisperModelKind.Tiny;
+        switch (modelKind)
+        {
+            case WhisperModelKind.Base:
+                WhisperModelCombo.SelectedItem = WhisperBaseItem;
+                break;
+            default:
+                WhisperModelCombo.SelectedItem = WhisperTinyItem;
+                break;
         }
 
         // Initialize speech engine selection (default to WhisperLocal if unset)
@@ -212,6 +225,30 @@ public partial class SettingsWindow : Window
         settings.HotkeyUseAlt = _hotkeyAlt;
         settings.HotkeyUseShift = _hotkeyShift;
         settings.HotkeyUseWin = _hotkeyWin;
+
+        // Persist Whisper model selection
+        if (WhisperModelCombo.SelectedItem is System.Windows.Controls.ComboBoxItem modelItem &&
+            modelItem.Tag is string modelTag)
+        {
+            settings.WhisperModel = modelTag switch
+            {
+                "Base" => WhisperModelKind.Base,
+                _ => WhisperModelKind.Tiny
+            };
+        }
+
+        // Apply selected Whisper model to runtime options so changes take effect without restart.
+        var effectiveModel = settings.WhisperModel ?? WhisperModelKind.Tiny;
+        var modelFileName = effectiveModel == WhisperModelKind.Base
+            ? "ggml-base.en.bin"
+            : "ggml-tiny.en.bin";
+
+        _whisperOptions.ModelPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Speech",
+            "Models",
+            modelFileName);
+
         _settingsStore.Save(settings);
         DialogResult = true;
         Close();
@@ -322,6 +359,24 @@ public partial class SettingsWindow : Window
         _hotkeyVk = KeyInterop.VirtualKeyFromKey(key);
         _capturingHotkey = false;
         HotkeyTextBox.Text = FormatHotkey();
+        e.Handled = true;
+    }
+
+    private void SupportLink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo(e.Uri.AbsoluteUri)
+            {
+                UseShellExecute = true
+            };
+            Process.Start(psi);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Unable to open link: {ex.Message}", "VoxThisWay", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
         e.Handled = true;
     }
 

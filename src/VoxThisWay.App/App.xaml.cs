@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.Media;
 using System.Windows;
+using System.Threading;
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -28,16 +30,52 @@ namespace VoxThisWay.App;
 /// </summary>
 public partial class App : Application
 {
+    private Mutex? _singleInstanceMutex;
     private IHost? _host;
+    private System.Windows.Media.MediaPlayer? _chimePlayer;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
+        // Single-instance guard: prevent multiple VoxThisWay tray processes.
+        var mutexName = "Global\\VoxThisWay.App.SingleInstance";
+        var createdNew = false;
+        _singleInstanceMutex = new Mutex(initiallyOwned: true, name: mutexName, createdNew: out createdNew);
+
+        if (!createdNew)
+        {
+            MessageBox.Show(
+                "VoxThisWay is already running in the system tray.",
+                "VoxThisWay",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            Shutdown();
+            return;
+        }
+
         AppDirectories.EnsureAll();
         ConfigureLogging();
         _host = BuildHost();
         _host.Start();
+
+        // Initialize chime sound for push-to-talk start, if present.
+        try
+        {
+            var chimePath = Path.Combine(AppContext.BaseDirectory, "Assets", "Sounds", "chime.mp3");
+            if (File.Exists(chimePath))
+            {
+                _chimePlayer = new System.Windows.Media.MediaPlayer
+                {
+                    Volume = 0.8
+                };
+                _chimePlayer.Open(new Uri(chimePath));
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to initialize chime sound; falling back to system sound.");
+        }
 
         var trayService = _host.Services.GetRequiredService<ITrayIconService>();
         var listeningService = _host.Services.GetRequiredService<IListeningStateService>();
@@ -50,6 +88,26 @@ public partial class App : Application
         // Diagnostics: verify Whisper local assets when that engine is active.
         var engineOptions = _host.Services.GetRequiredService<IOptions<SpeechEngineOptions>>();
         var whisperOptions = _host.Services.GetRequiredService<IOptions<WhisperLocalOptions>>();
+
+        // Apply user-selected Whisper model (tiny/base) to the runtime options before diagnostics.
+        try
+        {
+            var userSettings = settingsStore.Current ?? new UserSettings();
+            var modelKind = userSettings.WhisperModel ?? WhisperModelKind.Tiny;
+            var modelFileName = modelKind == WhisperModelKind.Base
+                ? "ggml-base.en.bin"
+                : "ggml-tiny.en.bin";
+
+            whisperOptions.Value.ModelPath = Path.Combine(
+                AppContext.BaseDirectory,
+                "Speech",
+                "Models",
+                modelFileName);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to apply Whisper model selection; falling back to configured model path.");
+        }
         if (engineOptions.Value.ActiveEngine == SpeechEngineKind.WhisperLocal)
         {
             var execPath = whisperOptions.Value.ResolveExecutablePath();
@@ -94,6 +152,22 @@ public partial class App : Application
             }
         }
 
+        void OpenSupport()
+        {
+            try
+            {
+                var psi = new ProcessStartInfo("https://buymeacoffee.com/spudds")
+                {
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to open support link.");
+            }
+        }
+
         static string GetEngineLabel(SpeechEngineKind kind) => kind switch
         {
             SpeechEngineKind.Azure => "Azure",
@@ -123,6 +197,7 @@ public partial class App : Application
             listeningService.RequestStop,
             OpenSettings,
             OpenLogs,
+            OpenSupport,
             OpenOnboarding,
             ExitApplication));
 
@@ -200,7 +275,17 @@ public partial class App : Application
 
             if (isListening)
             {
-                SystemSounds.Asterisk.Play();
+                if (_chimePlayer is not null)
+                {
+                    // Restart the chime from the beginning each time.
+                    _chimePlayer.Stop();
+                    _chimePlayer.Position = TimeSpan.Zero;
+                    _chimePlayer.Play();
+                }
+                else
+                {
+                    SystemSounds.Asterisk.Play();
+                }
                 trayService.ShowNotification("Dictation ready", "Hold Ctrl+Space to stream text.", TrayNotificationType.Success);
                 transcriptCoordinator.Reset();
             }

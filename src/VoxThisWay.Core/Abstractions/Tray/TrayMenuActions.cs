@@ -7,5 +7,6 @@ public record TrayMenuActions(
     Action StopListening,
     Action OpenSettings,
     Action ViewLogs,
+    Action OpenSupport,
     Action OpenOnboarding,
     Action ExitApplication);

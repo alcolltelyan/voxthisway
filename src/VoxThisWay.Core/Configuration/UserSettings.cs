@@ -31,4 +31,7 @@ public sealed class UserSettings
 
     [JsonPropertyName("showOnboarding")]
     public bool ShowOnboarding { get; set; } = true;
+
+    [JsonPropertyName("whisperModel")]
+    public WhisperModelKind? WhisperModel { get; set; }
 }

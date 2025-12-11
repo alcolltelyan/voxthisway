@@ -23,26 +23,28 @@ This document explains how to:
 
 ### 1.2 Whisper local assets
 
-The app can use a local Whisper engine via a `whisper_cli.exe`‑style binary plus a Whisper model file.
+The app can use a local Whisper engine via a `whisper_cli.exe`‑style binary plus one or more Whisper model files.
 
 **Expected layout (relative to `VoxThisWay.App.exe`):**
 
 ```text
-VoxThisWay/                  # app root (any folder name is fine)
-  VoxThisWay.App.exe        # WPF tray app
+VoxThisWay/                      # app root (any folder name is fine)
+  VoxThisWay.App.exe            # WPF tray app
   (other .dll / config files)
   Speech/
-    whisper_cli.exe         # Whisper CLI executable
+    whisper_cli.exe             # Whisper CLI executable
     Models/
-      ggml-tiny.en.bin      # default Whisper model file
+      (helper scripts, READMEs, etc. – optional)
+      ggml-tiny.en.bin          # default Whisper model (fast)
+      ggml-base.en.bin          # optional, higher‑accuracy model
 ```
 
 At runtime, the app resolves paths like:
 
 - Executable: `Speech/whisper_cli.exe`
-- Model: `Speech/Models/ggml-tiny.en.bin`
+- Model: resolved to either `ggml-tiny.en.bin` or `ggml-base.en.bin` under `Speech/Models/` based on the **Whisper model** setting (see Settings); **tiny** is the default.
 
-> **Note:** The exact Whisper binary and model are not included in this repository. You must obtain them yourself from a trusted source (e.g. official `whisper.cpp` releases) and place them in the `Speech/` folder as shown above.
+> **Note:** The exact Whisper binary and model `.bin` files are not included in this repository. You must obtain them yourself from a trusted source (e.g. official `whisper.cpp` releases) and place them in the `Speech/` folder as shown above. Any helper scripts under `Speech/Models` are there purely to assist with downloading models and do not themselves contain model data.
 
 ### 1.3 Azure Speech (optional)
 
@@ -142,11 +144,16 @@ Settings are stored in a JSON file under `%APPDATA%\VoxThisWay\Settings` and inc
   - Shows the current hotkey (e.g. `Ctrl+Space` or `F9`).
   - **Change** button to capture a new combination. Plain keys (e.g. `F9`) and combinations with modifiers are supported.
 
+- **Whisper model**
+  - **Tiny** (default) – uses `ggml-tiny.en.bin` for faster transcription.
+  - **Base** – uses `ggml-base.en.bin` for higher accuracy.
+
 When you click **Save**, the app:
 
 - Writes updated settings to the JSON store.
 - Persists any new Azure key via the secure credential store.
 - Restarts the hotkey service so the new hotkey takes effect immediately.
+- Applies the selected Whisper model to the active configuration so subsequent dictation uses the chosen model.
 
 ### 4.3 Microphone test
 
@@ -161,6 +168,16 @@ In **Settings → Input device**:
 
 This test does not start transcription; it only verifies audio capture from the selected device.
 
+### 4.4 Onboarding and visual indicators
+
+- On first run (or until disabled), an onboarding window guides you through:
+  - Verifying Whisper local assets (executable + model) are present.
+  - Verifying Azure Speech configuration (optional).
+- The onboarding status view shows readiness with simple green check / red X indicators for Whisper and Azure.
+- While dictation is active:
+  - The tray icon tooltip includes a simple microphone level indicator so you can see if audio is being detected.
+  - A small processing indicator near the cursor provides visual feedback that speech is being captured and processed.
+
 ---
 
 ## 5. Logs and diagnostics
@@ -173,7 +190,7 @@ Logging configuration:
 
 - Minimum level: **Information**
 - Microsoft framework logs: **Warning** and above
-- High‑volume, per‑chunk diagnostics (Whisper internals, text injection details) are logged at **Debug** level and are generally not present in normal runs.
+- Additional detailed diagnostics for the transcription pipeline (`VoxThisWay.Services.Transcription`) are logged at **Debug** level when enabled, including per‑chunk Whisper and audio events. Normal usage typically relies on Information‑level entries.
 
 Use **View Logs** from the tray menu to open the logs directory in Explorer.
 
@@ -194,8 +211,9 @@ From the repo root:
 This will:
 
 - Publish `VoxThisWay.App` in **Release** for `win-x64` into `publish/VoxThisWay`.
-- Warn you if a `Speech/` folder is not present in the publish output.
-- Create `publish/VoxThisWay-portable.zip` containing the published app.
+- If a `Speech/` folder exists at the repo root, copy it (including `Models/`) into the publish output, preserving the folder structure.
+- Warn you if a `Speech/` folder was not found at the expected source location so you can copy your Whisper assets manually.
+- Create `publish/VoxThisWay-portable.zip` containing the published app (and `Speech/` if present).
 
 You can override defaults:
 
@@ -203,7 +221,7 @@ You can override defaults:
 ./publish-portable.ps1 -Configuration Release -Runtime win-x64 -OutputRoot "publish/VoxThisWay" -ZipName "VoxThisWay-portable.zip"
 ```
 
-After running the script, ensure the `Speech/` folder with your Whisper executable and model is present next to `VoxThisWay.App.exe` inside the published folder before distributing the ZIP.
+After running the script, ensure the `Speech/` folder with your Whisper executable and models is present next to `VoxThisWay.App.exe` inside the published folder before distributing the ZIP. The script will copy a `Speech/` folder from the repo root if available, but you are responsible for placing the correct `whisper_cli.exe` and model files (e.g. `ggml-tiny.en.bin`, `ggml-base.en.bin`).
 
 ### 6.2 Manual steps (alternative)
 
@@ -225,7 +243,8 @@ After running the script, ensure the `Speech/` folder with your Whisper executab
    Speech\
      whisper_cli.exe
      Models\
-       ggml-tiny.en.bin
+       ggml-tiny.en.bin      # default model (fast)
+       ggml-base.en.bin      # optional, higher‑accuracy model
    ```
 
    Copy your Whisper executable and model into those paths.
@@ -253,6 +272,7 @@ After running the script, ensure the `Speech/` folder with your Whisper executab
          whisper_cli.exe
          Models\
            ggml-tiny.en.bin
+           ggml-base.en.bin (optional)
      ```
 
    - User runs `VoxThisWay.App.exe`; the tray icon appears.
@@ -271,6 +291,7 @@ When validating a build (Debug or ZIP Release), run through:
    - With `Whisper (local)` selected in Settings and `Speech/` present:
      - Confirm no "Whisper local not ready" warning appears.
      - Dictate and verify local transcription works.
+     - Optionally switch between `tiny.en` and `base.en` in Settings and confirm that dictation continues to work and logs show the corresponding model file.
 
 3. **Azure Speech** (if configured)
    - Switch engine to `Azure Speech`.
@@ -291,7 +312,7 @@ When validating a build (Debug or ZIP Release), run through:
 ## 8. Troubleshooting notes
 
 - **Whisper local not ready**
-  - Verify that `Speech/whisper_cli.exe` and `Speech/Models/ggml-tiny.en.bin` exist next to `VoxThisWay.App.exe`.
+  - Verify that `Speech/whisper_cli.exe` and at least one model file such as `Speech/Models/ggml-tiny.en.bin` (and/or `ggml-base.en.bin`) exist next to `VoxThisWay.App.exe`.
   - Confirm file names match exactly.
 
 - **No text appears in target app**
@@ -307,4 +328,19 @@ When validating a build (Debug or ZIP Release), run through:
   - Verify your key and region in Settings.
   - Confirm the resource is active in Azure and that you have not exceeded quota.
 
-This README is meant as the canonical guide for building, running, and distributing VoxThisWay via a portable ZIP. Keep it in sync with any future changes to paths, engines, or packaging strategy.
+- **Multiple instances**
+  - VoxThisWay is designed to run as a single tray instance.
+  - If you try to start the app while it is already running, you will see a message indicating that VoxThisWay is already running in the system tray and the new process will exit.
+
+---
+
+## 9. Credits
+
+- **Whisper local engine** – VoxThisWay’s local transcription path is built on top of a Whisper CLI binary compatible with the open‑source [`whisper.cpp`](https://github.com/ggerganov/whisper.cpp) project. Please refer to that project for source code, licenses, and updates to the underlying Whisper implementation.
+- **Azure Speech** – Cloud transcription support uses Azure Cognitive Services Speech. Refer to the official Azure Speech documentation for configuration, pricing, and service terms.
+
+If you find VoxThisWay useful and want to support development, you can **buy the author a coffee** here:
+
+- https://buymeacoffee.com/spudds
+
+This README is meant as the canonical guide for building, running, and distributing VoxThisWay via a portable ZIP. Keep it in sync with any future changes to paths, engines, dependencies, or packaging strategy.

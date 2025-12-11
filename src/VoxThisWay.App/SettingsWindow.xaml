@@ -13,6 +13,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,12">
@@ -38,7 +39,13 @@
             </StackPanel>
 
             <StackPanel x:Name="WhisperPanel" Orientation="Vertical" Margin="0,8,0,0" Visibility="Collapsed">
-                <TextBlock Text="Whisper local build" Margin="0,0,0,4" />
+                <TextBlock Text="Whisper model" Margin="0,0,0,4" />
+                <ComboBox x:Name="WhisperModelCombo" Width="220">
+                    <ComboBoxItem x:Name="WhisperTinyItem" Content="tiny.en (fast)" Tag="Tiny" />
+                    <ComboBoxItem x:Name="WhisperBaseItem" Content="base.en (better accuracy)" Tag="Base" />
+                </ComboBox>
+
+                <TextBlock Text="Whisper local build" Margin="8,8,0,4" />
                 <TextBlock x:Name="WhisperBuildInfoText" TextWrapping="Wrap" Foreground="Gray" />
             </StackPanel>
         </StackPanel>
@@ -54,6 +61,16 @@
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Save" Width="80" Margin="0,0,8,0" Click="Save_Click" />
             <Button Content="Cancel" Width="80" Click="Cancel_Click" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
+            <TextBlock>
+                <Run Text="If you enjoy VoxThisWay, you can " />
+                <Hyperlink NavigateUri="https://buymeacoffee.com/spudds" RequestNavigate="SupportLink_RequestNavigate">
+                    buy the author a coffee
+                </Hyperlink>
+                <Run Text="." />
+            </TextBlock>
         </StackPanel>
     </Grid>
 </Window>

@@ -33,4 +33,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Assets\Sounds\chime.mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

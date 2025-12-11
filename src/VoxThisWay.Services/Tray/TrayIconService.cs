@@ -139,6 +139,8 @@ public sealed class TrayIconService : ITrayIconService
         menu.Items.Add("Onboarding…", null, (_, _) => actions.OpenOnboarding());
         menu.Items.Add("View Logs", null, (_, _) => actions.ViewLogs());
         menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add("Support VoxThisWay…", null, (_, _) => actions.OpenSupport());
+        menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Exit", null, (_, _) => actions.ExitApplication());
 
         return menu;

@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Navigation;
+using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using VoxThisWay.Core.Configuration;
 using VoxThisWay.Core.Secrets;
@@ -133,5 +135,23 @@ public partial class OnboardingWindow : Window
         _settingsStore.Save(settings);
         DialogResult = true;
         Close();
+    }
+
+    private void SupportLink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo(e.Uri.AbsoluteUri)
+            {
+                UseShellExecute = true
+            };
+            Process.Start(psi);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Unable to open link: {ex.Message}", "VoxThisWay", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        e.Handled = true;
     }
 }
