@@ -3,6 +3,7 @@
 # Build results
 bin/
 obj/
+publish/
 [Bb]uild/
 [Bb]uilds/
 artifacts/

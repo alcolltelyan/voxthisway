@@ -203,7 +203,8 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
             var rawTranscript = await ReadTranscriptAsync(outputPath ?? string.Empty, stdout.ToString(), cancellationToken);
             var transcriptText = NormalizeTranscript(rawTranscript);
 
-            _logger.LogDebug("Whisper chunk {ChunkId} completed. ExitCode={ExitCode}, TranscriptLength={Length}", chunkId, process.ExitCode, transcriptText?.Length ?? 0);
+            _logger.LogDebug(
+                "Whisper chunk {ChunkId} completed. ExitCode={ExitCode}, TranscriptLength={Length}", chunkId, process.ExitCode, transcriptText?.Length ?? 0);
 
             if (!string.IsNullOrWhiteSpace(transcriptText))
             {
@@ -218,7 +219,11 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
             }
             else
             {
-                _logger.LogDebug("Whisper chunk {ChunkId} produced no text.", chunkId);
+                _logger.LogWarning(
+                    "Whisper chunk {ChunkId} produced no text. StdoutPreview=\"{Stdout}\", StderrPreview=\"{Stderr}\"",
+                    chunkId,
+                    Truncate(stdout.ToString(), 500),
+                    Truncate(stderr.ToString(), 500));
             }
         }
         catch (OperationCanceledException)
