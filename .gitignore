@@ -1,0 +1,54 @@
+## Ignore Visual Studio and .NET build artifacts
+
+# Build results
+bin/
+obj/
+[Bb]uild/
+[Bb]uilds/
+artifacts/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider / VS Code / other IDEs
+.idea/
+*.userprefs
+.vscode/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+
+# Diagnostics / logs
+*.log
+
+# Test results
+TestResult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+*.bak
+*.orig
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# StyleCop
+StyleCopReport.xml
+
+# Local configuration
+appsettings.Development.json
+appsettings.Local.json
