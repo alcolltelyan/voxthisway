@@ -28,4 +28,7 @@ public sealed class UserSettings
 
     [JsonPropertyName("speechEngine")]
     public SpeechEngineKind? SpeechEngine { get; set; }
+
+    [JsonPropertyName("showOnboarding")]
+    public bool ShowOnboarding { get; set; } = true;
 }

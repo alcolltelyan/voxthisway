@@ -136,6 +136,7 @@ public sealed class TrayIconService : ITrayIconService
         menu.Items.Add("Stop Listening", null, (_, _) => actions.StopListening());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Settings…", null, (_, _) => actions.OpenSettings());
+        menu.Items.Add("Onboarding…", null, (_, _) => actions.OpenOnboarding());
         menu.Items.Add("View Logs", null, (_, _) => actions.ViewLogs());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Exit", null, (_, _) => actions.ExitApplication());

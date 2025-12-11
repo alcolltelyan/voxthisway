@@ -6,10 +6,10 @@ namespace VoxThisWay.Core.Configuration;
 public sealed class WhisperLocalOptions
 {
     public string ExecutablePath { get; set; } =
-        Path.Combine(AppDirectories.AppDataRoot, "tools", "whisper", "whisper_cli.exe");
+        Path.Combine(AppContext.BaseDirectory, "Speech", "whisper_cli.exe");
 
     public string ModelPath { get; set; } =
-        Path.Combine(AppDirectories.WhisperModelsDirectory, "ggml-tiny.bin");
+        Path.Combine(AppContext.BaseDirectory, "Speech", "Models", "ggml-tiny.en.bin");
 
     public bool UseGpu { get; set; } = true;
 

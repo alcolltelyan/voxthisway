@@ -40,6 +40,8 @@ public sealed class TranscriptionSessionManager : ITranscriptionSessionManager, 
 
     public event EventHandler<TranscriptSegment>? TranscriptReceived;
 
+    public event EventHandler<double>? AudioLevelChanged;
+
     public bool IsRunning => _isRunning;
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -116,6 +118,34 @@ public sealed class TranscriptionSessionManager : ITranscriptionSessionManager, 
         {
             _logger.LogDebug("Forwarding audio buffer to transcriber. Bytes={Bytes}, Format={SampleRate}Hz/{Bits}bit/{Channels}ch", e.Buffer.Length, e.Format.SampleRate, e.Format.BitsPerSample, e.Format.Channels);
             _ = _activeTranscriber.PushAudioAsync(e.Buffer, e.Format);
+        }
+
+        // Compute a simple RMS-level indicator for diagnostics / UX.
+        try
+        {
+            if (e.Format.BitsPerSample == 16 && e.Format.Channels == 1 && e.Buffer.Length >= 2)
+            {
+                var span = e.Buffer.Span;
+                var sampleCount = span.Length / 2;
+                if (sampleCount > 0)
+                {
+                    double sumSquares = 0;
+                    for (int i = 0; i < sampleCount; i++)
+                    {
+                        short sample = BitConverter.ToInt16(span.Slice(i * 2, 2));
+                        var normalized = sample / 32768.0;
+                        sumSquares += normalized * normalized;
+                    }
+
+                    var rms = Math.Sqrt(sumSquares / sampleCount);
+                    rms = Math.Clamp(rms, 0.0, 1.0);
+                    AudioLevelChanged?.Invoke(this, rms);
+                }
+            }
+        }
+        catch
+        {
+            // Best-effort; ignore level computation failures.
         }
     }
 

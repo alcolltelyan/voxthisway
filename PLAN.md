@@ -97,13 +97,26 @@
 - Add heuristics to avoid duplicating already injected text (diffing segments).
 - Do **not** persist transcripts; discard once injected.
 
-### Phase 6 – Settings UI & Persistence
+### Phase 6 – Settings UI, Diagnostics & Packaging
 - Build WPF dialogs for:
   - General settings (autostart, notifications, logging level).
   - Hotkey selection (capture keyboard input, validate conflicts).
   - Engine selection + per-engine configuration (including Azure key/region entry fields with validation + DPAPI encryption).
 - Implement settings repository with JSON serialization and DPAPI for secure fields.
 - Add import/export of settings (excluding secrets) for backup.
+- Finalize logging levels and log file retention to avoid unbounded growth.
+- Define packaging strategy for Whisper local engine assets:
+  - **Portable ZIP (Strategy A – install-relative Whisper assets):**
+    - Build the release output for `VoxThisWay.App` into a folder structure similar to:
+      - `VoxThisWay/`
+        - `VoxThisWay.App.exe` (and required .dlls/config files)
+        - `Speech/`
+          - `whisper` executable binary (CPU/GPU build as chosen for release)
+          - `Models/`
+            - default Whisper model file (e.g., tiny English model)
+    - Configure (in a future change) the Whisper local options so that the executable path and model path resolve **relative to the app directory**, e.g. using `AppContext.BaseDirectory` + `"Speech"`/`"Speech\\Models"`.
+    - When creating the portable ZIP, include the `Speech/` subtree alongside the app binaries so that unzipping anywhere preserves the expected relative layout.
+    - Keep logs, settings, and per-user data in the existing `%APPDATA%/VoxThisWay/Settings` and related app data directories; the ZIP contains only the binaries and Whisper assets.
 
 ### Phase 7 – Diagnostics, Telemetry & UX Polish
 - Add in-app log viewer or button to open log directory.
@@ -111,11 +124,11 @@
 - Optional onboarding wizard to download Whisper models or collect Azure creds.
 - Add error dialogs routed through dispatcher to avoid WPF threading issues.
 
-### Phase 8 – Testing & Packaging
+### Phase 8 – Testing & Installers
 - Unit tests for services (hotkey, settings, DPAPI encryption, text diffing).
 - Integration smoke tests using dependency injection and mock STT engines.
 - Manual test matrix: Windows 10/11, different locales, UAC levels.
-- Package via MSIX or self-contained installer (e.g., WiX Toolset / Squirrel) with prerequisites (VC++ runtime, Whisper binaries).
+- Package via MSIX or self-contained installer (e.g., WiX Toolset / Squirrel) with prerequisites (VC++ runtime, Whisper binaries), mirroring the `Speech/` layout from the portable ZIP so both distributions share the same relative paths for Whisper executable and model.
 
 ## 4. Key Deliverables
 - `voxthisway.sln` with WPF project + supporting libraries.

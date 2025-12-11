@@ -1,7 +1,9 @@
-﻿using System.Media;
+﻿using System.IO;
+using System.Media;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
 using VoxThisWay.Core.Abstractions.Input;
@@ -42,13 +44,86 @@ public partial class App : Application
         var textInjectionService = _host.Services.GetRequiredService<ITextInjectionService>();
         var sessionManager = _host.Services.GetRequiredService<ITranscriptionSessionManager>();
         var hotkeyService = _host.Services.GetRequiredService<IHotkeyService>();
+        var settingsStore = _host.Services.GetRequiredService<IUserSettingsStore>();
         var processingIndicatorWindow = new ProcessingIndicatorWindow();
+
+        // Diagnostics: verify Whisper local assets when that engine is active.
+        var engineOptions = _host.Services.GetRequiredService<IOptions<SpeechEngineOptions>>();
+        var whisperOptions = _host.Services.GetRequiredService<IOptions<WhisperLocalOptions>>();
+        if (engineOptions.Value.ActiveEngine == SpeechEngineKind.WhisperLocal)
+        {
+            var execPath = whisperOptions.Value.ResolveExecutablePath();
+            var modelPath = whisperOptions.Value.ResolveModelPath();
+
+            if (!File.Exists(execPath) || !File.Exists(modelPath))
+            {
+                Log.Warning("Whisper local assets missing or incomplete. ExecPath={ExecPath}, ModelPath={ModelPath}", execPath, modelPath);
+                trayService.ShowNotification(
+                    "Whisper local not ready",
+                    "The Whisper executable or model file is missing. Ensure the 'Speech' folder from the ZIP is placed next to VoxThisWay.App.exe.",
+                    TrayNotificationType.Warning);
+            }
+        }
+
+        void OpenOnboarding()
+        {
+            try
+            {
+                var speechOptions = _host.Services.GetRequiredService<IOptions<SpeechEngineOptions>>();
+                var whisperOptions = _host.Services.GetRequiredService<IOptions<WhisperLocalOptions>>();
+                var azureCredentialStore = _host.Services.GetRequiredService<IAzureSpeechCredentialStore>();
+
+                var window = new OnboardingWindow(
+                    speechOptions,
+                    whisperOptions,
+                    azureCredentialStore,
+                    settingsStore,
+                    OpenSettings)
+                {
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen
+                };
+
+                window.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to open onboarding wizard.");
+                UiErrorReporter.ShowError(
+                    "Onboarding failed",
+                    $"The onboarding wizard could not be opened. You can still configure VoxThisWay via Settings.\n\nDetails: {ex.Message}");
+            }
+        }
+
+        static string GetEngineLabel(SpeechEngineKind kind) => kind switch
+        {
+            SpeechEngineKind.Azure => "Azure",
+            SpeechEngineKind.WhisperLocal => "Whisper",
+            SpeechEngineKind.Mock => "Mock",
+            _ => "Unknown"
+        };
+
+        string ResolveCurrentEngineLabel()
+        {
+            try
+            {
+                var userSettings = settingsStore.Current;
+                var kind = userSettings?.SpeechEngine ?? engineOptions.Value.ActiveEngine;
+                return GetEngineLabel(kind);
+            }
+            catch
+            {
+                return GetEngineLabel(engineOptions.Value.ActiveEngine);
+            }
+        }
+
+        var engineLabel = ResolveCurrentEngineLabel();
 
         trayService.Initialize(new TrayMenuActions(
             listeningService.RequestStart,
             listeningService.RequestStop,
             OpenSettings,
             OpenLogs,
+            OpenOnboarding,
             ExitApplication));
 
         var transcriptCoordinator = new TranscriptCoordinator(textInjectionService);
@@ -64,11 +139,51 @@ public partial class App : Application
                 "Hotkey unavailable",
                 "Ctrl+Space could not be registered. Use tray menu to control dictation.",
                 TrayNotificationType.Warning);
+            UiErrorReporter.ShowError(
+                "Hotkey unavailable",
+                $"VoxThisWay could not register the global hotkey. You can still control dictation from the tray menu.\n\nDetails: {ex.Message}");
         }
+
+        var lastLevelBucket = -1;
+
+        sessionManager.AudioLevelChanged += (_, level) =>
+        {
+            if (!listeningService.IsListening)
+            {
+                return;
+            }
+
+            // Map RMS level to a small number of discrete buckets to
+            // avoid excessively frequent tooltip updates.
+            var bucket = level switch
+            {
+                < 0.02 => 0, // silence / very low
+                < 0.05 => 1,
+                < 0.15 => 2,
+                _ => 3
+            };
+
+            if (bucket == lastLevelBucket)
+            {
+                return;
+            }
+
+            lastLevelBucket = bucket;
+            var bars = bucket switch
+            {
+                0 => "▁▁▁",
+                1 => "▂▁▁",
+                2 => "▂▃▁",
+                _ => "▂▃▅"
+            };
+
+            trayService.UpdateStatus($"VoxThisWay — {engineLabel} (Listening {bars})");
+        };
 
         listeningService.ListeningStateChanged += (_, isListening) =>
         {
-            var status = isListening ? "Listening…" : "Idle";
+            engineLabel = ResolveCurrentEngineLabel();
+            var status = isListening ? $"{engineLabel} (Listening…)" : $"{engineLabel} (Idle)";
             trayService.UpdateStatus($"VoxThisWay — {status}");
 
             Dispatcher.Invoke(() =>
@@ -113,6 +228,23 @@ public partial class App : Application
 
         var mainWindow = new MainWindow();
         mainWindow.Hide();
+
+        // Show onboarding wizard on first run (or until disabled).
+        try
+        {
+            var userSettings = settingsStore.Current;
+            if (userSettings is null || userSettings.ShowOnboarding)
+            {
+                OpenOnboarding();
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed during onboarding auto-launch.");
+            UiErrorReporter.ShowError(
+                "Onboarding failed",
+                $"Automatic onboarding could not complete. You can still open the wizard later from the tray menu.\n\nDetails: {ex.Message}");
+        }
     }
 
     protected override void OnExit(ExitEventArgs e)
