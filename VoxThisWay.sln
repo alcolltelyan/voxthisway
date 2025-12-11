@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3F40F0B9-6D9A-4924-8C0E-9B8F0E9F3C2B}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoxThisWay.App", "src\VoxThisWay.App\VoxThisWay.App.csproj", "{2E769491-B1CC-4A89-A999-157EA81A6A5E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoxThisWay.Core", "src\VoxThisWay.Core\VoxThisWay.Core.csproj", "{D5ECAA49-1255-4C1B-805F-7F86A026DDB1}"
@@ -12,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoxThisWay.Services", "src\VoxThisWay.Services\VoxThisWay.Services.csproj", "{364148DD-67A2-456B-8ADD-920BFC27CFBA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoxThisWay.Interop", "src\VoxThisWay.Interop\VoxThisWay.Interop.csproj", "{3528C20B-08F7-44C1-BCD3-900703A1D529}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoxThisWay.Tests", "tests\VoxThisWay.Tests\VoxThisWay.Tests.csproj", "{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,6 +75,18 @@ Global
 		{3528C20B-08F7-44C1-BCD3-900703A1D529}.Release|x64.Build.0 = Release|Any CPU
 		{3528C20B-08F7-44C1-BCD3-900703A1D529}.Release|x86.ActiveCfg = Release|Any CPU
 		{3528C20B-08F7-44C1-BCD3-900703A1D529}.Release|x86.Build.0 = Release|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Debug|x64.Build.0 = Debug|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Debug|x86.Build.0 = Debug|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Release|x64.ActiveCfg = Release|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Release|x64.Build.0 = Release|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Release|x86.ActiveCfg = Release|Any CPU
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,5 +96,6 @@ Global
 		{D5ECAA49-1255-4C1B-805F-7F86A026DDB1} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{364148DD-67A2-456B-8ADD-920BFC27CFBA} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{3528C20B-08F7-44C1-BCD3-900703A1D529} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{A3AE8E97-4F5D-4D34-A2F0-6C7A4B601C3A} = {3F40F0B9-6D9A-4924-8C0E-9B8F0E9F3C2B}
 	EndGlobalSection
 EndGlobal

@@ -306,8 +306,9 @@ public partial class App : Application
             var settingsStore = _host.Services.GetRequiredService<IUserSettingsStore>();
             var hotkeyService = _host.Services.GetRequiredService<IHotkeyService>();
             var azureCredentialStore = _host.Services.GetRequiredService<IAzureSpeechCredentialStore>();
+            var whisperOptions = _host.Services.GetRequiredService<IOptions<WhisperLocalOptions>>();
 
-            var window = new SettingsWindow(audioCaptureService, settingsStore, azureCredentialStore)
+            var window = new SettingsWindow(audioCaptureService, settingsStore, azureCredentialStore, whisperOptions.Value)
             {
                 WindowStartupLocation = WindowStartupLocation.CenterScreen
             };

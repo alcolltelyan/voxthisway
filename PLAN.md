@@ -125,10 +125,18 @@
 - Add error dialogs routed through dispatcher to avoid WPF threading issues.
 
 ### Phase 8 – Testing & Installers
-- Unit tests for services (hotkey, settings, DPAPI encryption, text diffing).
-- Integration smoke tests using dependency injection and mock STT engines.
+- Add `tests/VoxThisWay.Tests` xUnit project targeting `net10.0`.
+- Unit tests for core services and configuration types (hotkey defaults, settings JSON round-trip, engine options).
+- Run automated tests via `dotnet test` from the repo root.
 - Manual test matrix: Windows 10/11, different locales, UAC levels.
-- Package via MSIX or self-contained installer (e.g., WiX Toolset / Squirrel) with prerequisites (VC++ runtime, Whisper binaries), mirroring the `Speech/` layout from the portable ZIP so both distributions share the same relative paths for Whisper executable and model.
+- **Portable ZIP build (current shipping path):**
+  - Publish Release build: `dotnet publish -c Release -r win-x64 --self-contained false src/VoxThisWay.App/VoxThisWay.App.csproj -o .\publish\VoxThisWay`.
+  - Copy `Speech/` folder (Whisper executable + `Models/` subtree) next to `VoxThisWay.App.exe` in the publish output.
+  - Zip the `publish/VoxThisWay` folder into `VoxThisWay-portable.zip` for distribution.
+- **Future installer (MSIX/WiX, documented only):**
+  - Create an installer that installs the app binaries and `Speech/` folder preserving the same relative layout as the portable ZIP.
+  - Include prerequisites (VC++ runtime, .NET runtime if not self-contained).
+  - Keep user data (settings, logs, models cache) in `%APPDATA%/VoxThisWay` and `%LOCALAPPDATA%/VoxThisWay` regardless of installer technology.
 
 ## 4. Key Deliverables
 - `voxthisway.sln` with WPF project + supporting libraries.

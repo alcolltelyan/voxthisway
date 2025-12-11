@@ -181,7 +181,31 @@ Use **View Logs** from the tray menu to open the logs directory in Explorer.
 
 ## 6. Building a portable ZIP
 
-To produce a portable ZIP suitable for end‑users (Strategy A):
+To produce a portable ZIP suitable for end‑users (Strategy A), you can use the helper script or run the raw commands manually.
+
+### 6.1 Using the helper script (recommended)
+
+From the repo root:
+
+```powershell
+./publish-portable.ps1
+```
+
+This will:
+
+- Publish `VoxThisWay.App` in **Release** for `win-x64` into `publish/VoxThisWay`.
+- Warn you if a `Speech/` folder is not present in the publish output.
+- Create `publish/VoxThisWay-portable.zip` containing the published app.
+
+You can override defaults:
+
+```powershell
+./publish-portable.ps1 -Configuration Release -Runtime win-x64 -OutputRoot "publish/VoxThisWay" -ZipName "VoxThisWay-portable.zip"
+```
+
+After running the script, ensure the `Speech/` folder with your Whisper executable and model is present next to `VoxThisWay.App.exe` inside the published folder before distributing the ZIP.
+
+### 6.2 Manual steps (alternative)
 
 1. **Publish the app in Release**
 

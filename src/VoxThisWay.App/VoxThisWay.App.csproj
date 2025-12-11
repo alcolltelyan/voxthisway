@@ -23,6 +23,10 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <ApplicationIcon>Assets\Icons\voxthisway.ico</ApplicationIcon>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

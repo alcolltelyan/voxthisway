@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using VoxThisWay.Core.Audio;
@@ -14,6 +16,7 @@ public partial class SettingsWindow : Window
     private readonly IAudioCaptureService _audioCaptureService;
     private readonly IUserSettingsStore _settingsStore;
     private readonly IAzureSpeechCredentialStore _azureCredentialStore;
+    private readonly WhisperLocalOptions _whisperOptions;
     private readonly List<AudioDeviceInfo> _devices;
     private bool _capturingHotkey;
     private int _hotkeyVk;
@@ -22,13 +25,14 @@ public partial class SettingsWindow : Window
     private bool _hotkeyShift;
     private bool _hotkeyWin;
 
-    public SettingsWindow(IAudioCaptureService audioCaptureService, IUserSettingsStore settingsStore, IAzureSpeechCredentialStore azureCredentialStore)
+    public SettingsWindow(IAudioCaptureService audioCaptureService, IUserSettingsStore settingsStore, IAzureSpeechCredentialStore azureCredentialStore, WhisperLocalOptions whisperOptions)
     {
         InitializeComponent();
 
         _audioCaptureService = audioCaptureService;
         _settingsStore = settingsStore;
         _azureCredentialStore = azureCredentialStore;
+        _whisperOptions = whisperOptions;
 
         _devices = _audioCaptureService.EnumerateInputDevices().ToList();
         DeviceCombo.ItemsSource = _devices;
@@ -57,11 +61,14 @@ public partial class SettingsWindow : Window
         {
             EngineCombo.SelectedItem = AzureEngineItem;
             AzurePanel.Visibility = Visibility.Visible;
+            WhisperPanel.Visibility = Visibility.Collapsed;
         }
         else
         {
             EngineCombo.SelectedItem = WhisperEngineItem;
             AzurePanel.Visibility = Visibility.Collapsed;
+            WhisperPanel.Visibility = Visibility.Visible;
+            _ = LoadWhisperBuildInfoAsync();
         }
 
         _hotkeyVk = currentSettings.HotkeyVirtualKey != 0 ? currentSettings.HotkeyVirtualKey : 0x20;
@@ -94,6 +101,81 @@ public partial class SettingsWindow : Window
         catch
         {
             AzureKeySummary.Text = "Unable to determine current key status.";
+        }
+    }
+
+    private async System.Threading.Tasks.Task LoadWhisperBuildInfoAsync()
+    {
+        try
+        {
+            var execPath = _whisperOptions.ResolveExecutablePath();
+            if (!File.Exists(execPath))
+            {
+                WhisperBuildInfoText.Text = $"Executable not found at {execPath}.";
+                return;
+            }
+
+            WhisperBuildInfoText.Text = "Detecting Whisper build…";
+
+            var psi = new ProcessStartInfo(execPath, "--help")
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            using var process = new Process { StartInfo = psi };
+            process.Start();
+
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+
+            var exited = await System.Threading.Tasks.Task.WhenAny(
+                process.WaitForExitAsync(),
+                System.Threading.Tasks.Task.Delay(3000)) == process.WaitForExitAsync();
+
+            if (!exited)
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    // ignore kill failures
+                }
+            }
+
+            var stdout = await stdoutTask;
+            var stderr = await stderrTask;
+
+            var combined = (stdout + "\n" + stderr) ?? string.Empty;
+
+            var isGpu = combined.IndexOf("CUDA", StringComparison.OrdinalIgnoreCase) >= 0
+                        || combined.IndexOf("GPU", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            string buildKind;
+            if (string.IsNullOrWhiteSpace(combined))
+            {
+                buildKind = exited
+                    ? "Unknown (no help output captured)"
+                    : "Unknown (process did not finish within timeout)";
+            }
+            else
+            {
+                buildKind = isGpu
+                    ? "GPU-accelerated (CUDA)"
+                    : "CPU-only (no GPU indicators in help output)";
+            }
+
+            WhisperBuildInfoText.Text =
+                $"Executable: {execPath}\n" +
+                $"Build: {buildKind}";
+        }
+        catch (Exception ex)
+        {
+            WhisperBuildInfoText.Text = $"Unable to determine Whisper build: {ex.Message}";
         }
     }
 
@@ -197,13 +279,19 @@ public partial class SettingsWindow : Window
     private void EngineCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
         if (EngineCombo.SelectedItem is System.Windows.Controls.ComboBoxItem item &&
-            item.Tag is string tag && tag == "Azure")
+            item.Tag is string tag)
         {
-            AzurePanel.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            AzurePanel.Visibility = Visibility.Collapsed;
+            if (tag == "Azure")
+            {
+                AzurePanel.Visibility = Visibility.Visible;
+                WhisperPanel.Visibility = Visibility.Collapsed;
+            }
+            else if (tag == "WhisperLocal")
+            {
+                AzurePanel.Visibility = Visibility.Collapsed;
+                WhisperPanel.Visibility = Visibility.Visible;
+                _ = LoadWhisperBuildInfoAsync();
+            }
         }
     }
 
