@@ -9,6 +9,7 @@ namespace VoxThisWay.App;
 public partial class ProcessingIndicatorWindow : Window
 {
     private readonly DispatcherTimer _followTimer;
+    private readonly DispatcherTimer _successHideTimer;
 
     public ProcessingIndicatorWindow()
     {
@@ -20,14 +21,26 @@ public partial class ProcessingIndicatorWindow : Window
         };
         _followTimer.Tick += (_, _) => UpdatePosition();
 
+        _successHideTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(650)
+        };
+        _successHideTimer.Tick += (_, _) =>
+        {
+            _successHideTimer.Stop();
+            HideIndicator();
+        };
+
         // Start hidden; App will control visibility.
         Hide();
     }
 
     public void ShowListening()
     {
+        StopSuccessTimer();
         ListeningVisual.Visibility = Visibility.Visible;
         ProcessingVisual.Visibility = Visibility.Collapsed;
+        SuccessVisual.Visibility = Visibility.Collapsed;
         UpdatePosition();
 
         if (!_followTimer.IsEnabled)
@@ -43,8 +56,10 @@ public partial class ProcessingIndicatorWindow : Window
 
     public void ShowProcessing()
     {
+        StopSuccessTimer();
         ListeningVisual.Visibility = Visibility.Collapsed;
         ProcessingVisual.Visibility = Visibility.Visible;
+        SuccessVisual.Visibility = Visibility.Collapsed;
         UpdatePosition();
 
         if (!_followTimer.IsEnabled)
@@ -58,8 +73,30 @@ public partial class ProcessingIndicatorWindow : Window
         }
     }
 
+    public void ShowSuccess()
+    {
+        StopSuccessTimer();
+        ListeningVisual.Visibility = Visibility.Collapsed;
+        ProcessingVisual.Visibility = Visibility.Collapsed;
+        SuccessVisual.Visibility = Visibility.Visible;
+        UpdatePosition();
+
+        if (!_followTimer.IsEnabled)
+        {
+            _followTimer.Start();
+        }
+
+        if (!IsVisible)
+        {
+            Show();
+        }
+
+        _successHideTimer.Start();
+    }
+
     public void HideIndicator()
     {
+        StopSuccessTimer();
         if (_followTimer.IsEnabled)
         {
             _followTimer.Stop();
@@ -68,6 +105,14 @@ public partial class ProcessingIndicatorWindow : Window
         if (IsVisible)
         {
             Hide();
+        }
+    }
+
+    private void StopSuccessTimer()
+    {
+        if (_successHideTimer.IsEnabled)
+        {
+            _successHideTimer.Stop();
         }
     }
 

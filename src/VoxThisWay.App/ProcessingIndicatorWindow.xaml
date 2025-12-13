@@ -54,5 +54,12 @@
                 </EventTrigger>
             </Grid.Triggers>
         </Grid>
+
+        <Grid x:Name="SuccessVisual" Visibility="Collapsed">
+            <Viewbox Width="18" Height="18">
+                <Path Stroke="#FF22C55E" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                      Data="M2,9 L7,14 L16,4" />
+            </Viewbox>
+        </Grid>
     </Grid>
 </Window>

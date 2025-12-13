@@ -303,7 +303,7 @@ public partial class App : Application
                 }
                 else
                 {
-                    processingIndicatorWindow.HideIndicator();
+                    processingIndicatorWindow.ShowSuccess();
                 }
             });
         };
