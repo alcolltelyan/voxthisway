@@ -265,11 +265,7 @@ public partial class App : Application
             {
                 if (isListening)
                 {
-                    processingIndicatorWindow.Start();
-                }
-                else
-                {
-                    processingIndicatorWindow.Stop();
+                    processingIndicatorWindow.ShowListening();
                 }
             });
 
@@ -295,6 +291,21 @@ public partial class App : Application
                 _ = textInjectionService.InjectTextAsync(" ");
                 textInjectionService.Reset();
             }
+        };
+
+        listeningService.ProcessingStateChanged += (_, isProcessing) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (isProcessing)
+                {
+                    processingIndicatorWindow.ShowProcessing();
+                }
+                else
+                {
+                    processingIndicatorWindow.HideIndicator();
+                }
+            });
         };
 
         sessionManager.TranscriptReceived += (_, segment) =>

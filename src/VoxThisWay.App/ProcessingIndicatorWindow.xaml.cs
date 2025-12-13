@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace VoxThisWay.App;
@@ -23,8 +24,10 @@ public partial class ProcessingIndicatorWindow : Window
         Hide();
     }
 
-    public void Start()
+    public void ShowListening()
     {
+        ListeningVisual.Visibility = Visibility.Visible;
+        ProcessingVisual.Visibility = Visibility.Collapsed;
         UpdatePosition();
 
         if (!_followTimer.IsEnabled)
@@ -38,7 +41,24 @@ public partial class ProcessingIndicatorWindow : Window
         }
     }
 
-    public void Stop()
+    public void ShowProcessing()
+    {
+        ListeningVisual.Visibility = Visibility.Collapsed;
+        ProcessingVisual.Visibility = Visibility.Visible;
+        UpdatePosition();
+
+        if (!_followTimer.IsEnabled)
+        {
+            _followTimer.Start();
+        }
+
+        if (!IsVisible)
+        {
+            Show();
+        }
+    }
+
+    public void HideIndicator()
     {
         if (_followTimer.IsEnabled)
         {
@@ -56,9 +76,11 @@ public partial class ProcessingIndicatorWindow : Window
         try
         {
             var cursor = System.Windows.Forms.Cursor.Position; // screen coordinates in pixels
-            const int offset = 16; // offset so we don't cover the cursor exactly
-            Left = cursor.X + offset;
-            Top = cursor.Y + offset;
+            var dpi = VisualTreeHelper.GetDpi(this);
+
+            const double offsetDip = 8; // keep close without covering the cursor
+            Left = (cursor.X / dpi.DpiScaleX) + offsetDip;
+            Top = (cursor.Y / dpi.DpiScaleY) + offsetDip;
         }
         catch
         {
