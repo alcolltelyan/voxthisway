@@ -18,6 +18,7 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
     private readonly WhisperLocalOptions _options;
     private readonly ILogger<WhisperLocalTranscriber> _logger;
     private readonly object _bufferLock = new();
+    private readonly SemaphoreSlim _chunkProcessingLock = new(1, 1);
     private MemoryStream _buffer = new();
     private AudioFormat _currentFormat;
     private TranscriptionConfig? _config;
@@ -70,7 +71,15 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
         if (remaining is not null)
         {
             _logger.LogDebug("Whisper StopAsync flushing remaining buffer. Bytes={Bytes}", remaining.Length);
-            await ProcessChunkAsync(remaining, _currentFormat, CancellationToken.None);
+            await _chunkProcessingLock.WaitAsync(CancellationToken.None);
+            try
+            {
+                await ProcessChunkAsync(remaining, _currentFormat, CancellationToken.None);
+            }
+            finally
+            {
+                _chunkProcessingLock.Release();
+            }
         }
         else
         {
@@ -98,7 +107,15 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
 
         if (chunk is not null)
         {
-            await ProcessChunkAsync(chunk, format, cancellationToken);
+            await _chunkProcessingLock.WaitAsync(cancellationToken);
+            try
+            {
+                await ProcessChunkAsync(chunk, format, cancellationToken);
+            }
+            finally
+            {
+                _chunkProcessingLock.Release();
+            }
         }
     }
 
@@ -213,7 +230,7 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
                     this,
                     new TranscriptSegment(
                         transcriptText.Trim(),
-                        false,
+                        true,
                         TimeSpan.Zero,
                         TimeSpan.Zero));
                 _logger.LogDebug("TranscriptAvailable raised for chunk {ChunkId}. Preview=\"{Preview}\"", chunkId, Truncate(transcriptText, 200));
@@ -352,5 +369,6 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
     {
         await StopAsync();
         _buffer.Dispose();
+        _chunkProcessingLock.Dispose();
     }
 }

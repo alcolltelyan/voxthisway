@@ -368,9 +368,9 @@ public partial class App : Application
                 services.AddSingleton<IAzureSpeechCredentialStore, AzureSpeechCredentialStore>();
                 services.AddSingleton<IUserSettingsStore, JsonUserSettingsStore>();
                 services.AddSingleton<ITextInjectionService, TextInjectionService>();
-                services.AddSingleton<MockSpeechTranscriber>();
-                services.AddSingleton<WhisperLocalTranscriber>();
-                services.AddSingleton<AzureSpeechTranscriber>();
+                services.AddTransient<MockSpeechTranscriber>();
+                services.AddTransient<WhisperLocalTranscriber>();
+                services.AddTransient<AzureSpeechTranscriber>();
                 services.AddSingleton<ISpeechTranscriberFactory, SpeechTranscriberFactory>();
                 services.AddSingleton<ITranscriptionSessionManager, TranscriptionSessionManager>();
             })
