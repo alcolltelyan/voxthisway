@@ -219,6 +219,7 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
 
             _logger.LogDebug("Reading transcript for chunk {ChunkId}. OutputPath={OutputPath}", chunkId, outputPath ?? string.Empty);
             var rawTranscript = await ReadTranscriptAsync(outputPath ?? string.Empty, stdout.ToString(), cancellationToken);
+            var isBlankAudio = rawTranscript?.IndexOf("[BLANK_AUDIO]", StringComparison.OrdinalIgnoreCase) >= 0;
             var transcriptText = NormalizeTranscript(rawTranscript);
 
             _logger.LogDebug(
@@ -237,11 +238,20 @@ public sealed class WhisperLocalTranscriber : ISpeechTranscriber
             }
             else
             {
-                _logger.LogWarning(
-                    "Whisper chunk {ChunkId} produced no text. StdoutPreview=\"{Stdout}\", StderrPreview=\"{Stderr}\"",
-                    chunkId,
-                    Truncate(stdout.ToString(), 500),
-                    Truncate(stderr.ToString(), 500));
+                if (isBlankAudio)
+                {
+                    _logger.LogDebug(
+                        "Whisper chunk {ChunkId} contained blank audio.",
+                        chunkId);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Whisper chunk {ChunkId} produced no text. StdoutPreview=\"{Stdout}\", StderrPreview=\"{Stderr}\"",
+                        chunkId,
+                        Truncate(stdout.ToString(), 500),
+                        Truncate(stderr.ToString(), 500));
+                }
             }
         }
         catch (OperationCanceledException)
