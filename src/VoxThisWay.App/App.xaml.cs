@@ -282,12 +282,10 @@ public partial class App : Application
                 {
                     SystemSounds.Asterisk.Play();
                 }
-                trayService.ShowNotification("Dictation ready", "Hold Ctrl+Space to stream text.", TrayNotificationType.Success);
                 transcriptCoordinator.Reset();
             }
             else
             {
-                trayService.ShowNotification("Dictation paused", "Hold Ctrl+Space again to resume.", TrayNotificationType.Info);
                 _ = textInjectionService.InjectTextAsync(" ");
                 textInjectionService.Reset();
             }
