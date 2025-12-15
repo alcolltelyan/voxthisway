@@ -1,0 +1,21 @@
+<Page x:Class="VoxThisWay.App.SettingsPages.HotkeySettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Hotkey">
+
+    <StackPanel Margin="24" Orientation="Vertical">
+        <ui:Card>
+            <StackPanel>
+                <TextBlock Text="Push-to-talk hotkey" FontSize="16" FontWeight="SemiBold" />
+
+                <StackPanel Margin="0,12,0,0">
+                    <DockPanel>
+                        <TextBox x:Name="HotkeyTextBox" Width="260" IsReadOnly="True" PreviewKeyDown="HotkeyTextBox_PreviewKeyDown" />
+                        <ui:Button x:Name="ChangeButton" Content="Change" Width="90" Margin="12,0,0,0" Click="ChangeHotkey_Click" />
+                    </DockPanel>
+                </StackPanel>
+            </StackPanel>
+        </ui:Card>
+    </StackPanel>
+</Page>

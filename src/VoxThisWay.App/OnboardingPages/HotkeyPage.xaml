@@ -1,0 +1,29 @@
+<Page x:Class="VoxThisWay.App.OnboardingPages.HotkeyPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Hotkey"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+
+    <StackPanel Margin="24" Orientation="Vertical">
+        <TextBlock Text="Step 3 of 5 — Choose your push-to-talk hotkey" FontSize="18" FontWeight="SemiBold" />
+        <TextBlock Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+            Hold this hotkey to start dictation. Pick something you won’t use often while typing.
+        </TextBlock>
+
+        <ui:Card Margin="0,16,0,0">
+            <StackPanel>
+                <TextBlock Text="Hotkey" FontSize="16" FontWeight="SemiBold" />
+
+                <DockPanel Margin="0,12,0,0">
+                    <TextBox x:Name="HotkeyTextBox" Width="260" IsReadOnly="True" PreviewKeyDown="HotkeyTextBox_PreviewKeyDown" />
+                    <ui:Button x:Name="ChangeButton" Content="Change" Width="90" Margin="12,0,0,0" Click="ChangeHotkey_Click" />
+                </DockPanel>
+
+                <TextBlock Margin="0,12,0,0" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                    Tip: If you use Ctrl+Space in other apps, choose a different combination to avoid conflicts.
+                </TextBlock>
+            </StackPanel>
+        </ui:Card>
+    </StackPanel>
+</Page>

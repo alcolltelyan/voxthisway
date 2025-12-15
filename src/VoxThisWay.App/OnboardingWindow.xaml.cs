@@ -1,27 +1,41 @@
 using System;
-using System.IO;
 using System.Windows;
-using System.Windows.Media;
-using System.Windows.Navigation;
-using System.Diagnostics;
 using Microsoft.Extensions.Options;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
+using VoxThisWay.Core.Audio;
 using VoxThisWay.Core.Configuration;
 using VoxThisWay.Core.Secrets;
+using VoxThisWay.App.OnboardingPages;
 
 namespace VoxThisWay.App;
 
-public partial class OnboardingWindow : Window
+public partial class OnboardingWindow : FluentWindow
 {
     private readonly IOptions<SpeechEngineOptions> _speechOptions;
     private readonly IOptions<WhisperLocalOptions> _whisperOptions;
     private readonly IAzureSpeechCredentialStore _azureCredentialStore;
+    private readonly IAudioCaptureService _audioCaptureService;
     private readonly IUserSettingsStore _settingsStore;
     private readonly Action _openSettingsAction;
+
+    internal static OnboardingSession? CurrentSession { get; private set; }
+
+    private OnboardingSession? _session;
+    private int _pageIndex;
+    private readonly Type[] _pageTypes =
+    {
+        typeof(WelcomePage),
+        typeof(MicrophonePage),
+        typeof(HotkeyPage),
+        typeof(ChecksPage),
+        typeof(FinalPage)
+    };
 
     public OnboardingWindow(
         IOptions<SpeechEngineOptions> speechOptions,
         IOptions<WhisperLocalOptions> whisperOptions,
         IAzureSpeechCredentialStore azureCredentialStore,
+        IAudioCaptureService audioCaptureService,
         IUserSettingsStore settingsStore,
         Action openSettingsAction)
     {
@@ -30,88 +44,91 @@ public partial class OnboardingWindow : Window
         _speechOptions = speechOptions;
         _whisperOptions = whisperOptions;
         _azureCredentialStore = azureCredentialStore;
+        _audioCaptureService = audioCaptureService;
         _settingsStore = settingsStore;
         _openSettingsAction = openSettingsAction;
 
         Loaded += async (_, _) =>
         {
-            await UpdateStatusAsync();
             var settings = _settingsStore.Current;
             DontShowAgainCheckBox.IsChecked = settings is { ShowOnboarding: false } ? true : false;
+
+            _session = new OnboardingSession(_speechOptions, _whisperOptions, _azureCredentialStore, _audioCaptureService, _settingsStore);
+            CurrentSession = _session;
+            await _session.UpdateStatusAsync();
+
+            _pageIndex = 0;
+            NavigateToIndex(_pageIndex);
+        };
+
+        Closed += (_, _) =>
+        {
+            if (ReferenceEquals(CurrentSession, _session))
+            {
+                CurrentSession = null;
+            }
         };
     }
 
-    private async System.Threading.Tasks.Task UpdateStatusAsync()
+    private void NavigateToIndex(int index)
     {
-        // Whisper local check
-        var whisperExec = _whisperOptions.Value.ResolveExecutablePath();
-        var whisperModel = _whisperOptions.Value.ResolveModelPath();
-        var hasExec = File.Exists(whisperExec);
-        var hasModel = File.Exists(whisperModel);
-
-        if (hasExec && hasModel)
+        if (index < 0 || index >= _pageTypes.Length)
         {
-            WhisperStatusIcon.Text = "✔";
-            WhisperStatusIcon.Foreground = Brushes.Green;
-
-            WhisperStatusText.Text =
-                $"Whisper local looks ready.\nExecutable: {whisperExec}\nModel: {whisperModel}";
-        }
-        else
-        {
-            WhisperStatusIcon.Text = "✖";
-            WhisperStatusIcon.Foreground = Brushes.Red;
-
-            WhisperStatusText.Text =
-                "Whisper local is not fully ready.\n" +
-                $"Executable present: {hasExec} ({whisperExec})\n" +
-                $"Model present: {hasModel} ({whisperModel})\n" +
-                "Ensure the Speech folder from the ZIP (including whisper_cli.exe and the model file) is placed next to VoxThisWay.App.exe.";
+            return;
         }
 
-        // Azure Speech check
-        var engineOptions = _speechOptions.Value;
-        var azureRegion = engineOptions.AzureSpeech.Region;
-        var azureEndpoint = engineOptions.AzureSpeech.Endpoint;
-        string? key = null;
-        try
+        ContentFrame.Navigate(Activator.CreateInstance(_pageTypes[index]));
+
+        var step = index + 1;
+        var total = _pageTypes.Length;
+        ProgressText.Text = $"Step {step} of {total}";
+        ProgressBar.Minimum = 0;
+        ProgressBar.Maximum = total - 1;
+        ProgressBar.Value = index;
+
+        BackButton.IsEnabled = index > 0;
+        NextButton.IsEnabled = index < _pageTypes.Length - 1;
+
+        var onChecksPage = _pageTypes[index] == typeof(ChecksPage);
+        RerunChecksButton.IsEnabled = onChecksPage;
+        RerunChecksButton.Visibility = onChecksPage ? Visibility.Visible : Visibility.Collapsed;
+
+        var onFinalPage = index == _pageTypes.Length - 1;
+        OpenSettingsButton.Visibility = onFinalPage ? Visibility.Visible : Visibility.Collapsed;
+
+        CloseButton.Content = index == _pageTypes.Length - 1 ? "Finish" : "Close";
+    }
+
+    private void Back_Click(object sender, RoutedEventArgs e)
+    {
+        if (_pageIndex <= 0)
         {
-            key = await _azureCredentialStore.GetApiKeyAsync();
-        }
-        catch
-        {
-            // ignore failures; handled below
+            return;
         }
 
-        var hasKey = !string.IsNullOrWhiteSpace(key);
-        var hasRegionOrEndpoint = !string.IsNullOrWhiteSpace(azureRegion) || !string.IsNullOrWhiteSpace(azureEndpoint);
+        _pageIndex--;
+        NavigateToIndex(_pageIndex);
+    }
 
-        if (hasKey && hasRegionOrEndpoint)
+    private void Next_Click(object sender, RoutedEventArgs e)
+    {
+        if (_pageIndex >= _pageTypes.Length - 1)
         {
-            AzureStatusIcon.Text = "✔";
-            AzureStatusIcon.Foreground = Brushes.Green;
-
-            var last4 = key!.Length >= 4 ? key[^4..] : key;
-            AzureStatusText.Text =
-                "Azure Speech appears configured.\n" +
-                $"Key: (stored securely, ending …{last4})\n" +
-                $"Region: {azureRegion ?? "(not set)"}\n" +
-                $"Endpoint: {azureEndpoint ?? "(not set)"}";
+            return;
         }
-        else
-        {
-            AzureStatusIcon.Text = "✖";
-            AzureStatusIcon.Foreground = Brushes.Red;
 
-            AzureStatusText.Text =
-                "Azure Speech is optional and not fully configured.\n" +
-                "To use Azure: open Settings → Speech engine → Azure Speech, enter your API key and region/endpoint.";
-        }
+        _pageIndex++;
+        NavigateToIndex(_pageIndex);
     }
 
     private async void RerunChecks_Click(object sender, RoutedEventArgs e)
     {
-        await UpdateStatusAsync();
+        if (_session is null)
+        {
+            return;
+        }
+
+        await _session.UpdateStatusAsync();
     }
 
     private void OpenSettings_Click(object sender, RoutedEventArgs e)
@@ -122,6 +139,18 @@ public partial class OnboardingWindow : Window
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         var settings = _settingsStore.Current ?? new UserSettings();
+
+        var isFinal = _pageIndex == _pageTypes.Length - 1;
+        if (isFinal && _session is not null)
+        {
+            settings.AudioInputDeviceId = _session.SelectedDevice?.DeviceId;
+            settings.HotkeyVirtualKey = _session.HotkeyVirtualKey != 0 ? _session.HotkeyVirtualKey : settings.HotkeyVirtualKey;
+            settings.HotkeyUseCtrl = _session.HotkeyUseCtrl;
+            settings.HotkeyUseAlt = _session.HotkeyUseAlt;
+            settings.HotkeyUseShift = _session.HotkeyUseShift;
+            settings.HotkeyUseWin = _session.HotkeyUseWin;
+        }
+
         // If the user checked "Don’t show this again", persist ShowOnboarding = false.
         if (DontShowAgainCheckBox.IsChecked == true)
         {
@@ -135,23 +164,5 @@ public partial class OnboardingWindow : Window
         _settingsStore.Save(settings);
         DialogResult = true;
         Close();
-    }
-
-    private void SupportLink_RequestNavigate(object sender, RequestNavigateEventArgs e)
-    {
-        try
-        {
-            var psi = new ProcessStartInfo(e.Uri.AbsoluteUri)
-            {
-                UseShellExecute = true
-            };
-            Process.Start(psi);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(this, $"Unable to open link: {ex.Message}", "VoxThisWay", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-
-        e.Handled = true;
     }
 }

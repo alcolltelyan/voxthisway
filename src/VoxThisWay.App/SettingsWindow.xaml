@@ -1,76 +1,70 @@
-<Window x:Class="VoxThisWay.App.SettingsWindow"
+<ui:FluentWindow x:Class="VoxThisWay.App.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:pages="clr-namespace:VoxThisWay.App.SettingsPages"
         mc:Ignorable="d"
         Title="VoxThisWay Settings"
-        SizeToContent="WidthAndHeight"
-        ResizeMode="NoResize">
-    <Grid Margin="16">
+        Width="860"
+        Height="620"
+        MinWidth="720"
+        MinHeight="520"
+        ResizeMode="CanResize"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
+        WindowCornerPreference="Round">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,12">
-            <TextBlock Text="Input device" FontWeight="Bold" Margin="0,0,0,4" />
-            <DockPanel>
-                <ComboBox x:Name="DeviceCombo" Width="300" DisplayMemberPath="DisplayName" />
-                <Button Content="Test" Width="80" Margin="8,0,0,0" Click="TestDevice_Click" />
-            </DockPanel>
-        </StackPanel>
+        <ui:TitleBar Grid.Row="0" Title="VoxThisWay Settings" />
 
-        <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,0,0,12">
-            <TextBlock Text="Speech engine" FontWeight="Bold" Margin="0,0,0,4" />
-            <ComboBox x:Name="EngineCombo" Width="350" SelectionChanged="EngineCombo_SelectionChanged">
-                <ComboBoxItem x:Name="WhisperEngineItem" Content="Whisper (local)" Tag="WhisperLocal" />
-                <ComboBoxItem x:Name="AzureEngineItem" Content="Azure Speech" Tag="Azure" />
-            </ComboBox>
+        <ui:NavigationView Grid.Row="1" x:Name="RootNavigation" PaneDisplayMode="LeftFluent" Margin="0">
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="Audio" TargetPageType="{x:Type pages:AudioSettingsPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Mic24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="Speech" TargetPageType="{x:Type pages:SpeechSettingsPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Chat24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="Hotkey" TargetPageType="{x:Type pages:HotkeySettingsPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Keyboard24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.MenuItems>
 
-            <StackPanel x:Name="AzurePanel" Orientation="Vertical" Margin="0,8,0,0" Visibility="Collapsed">
-                <TextBlock Text="Azure Speech API key" Margin="0,0,0,4" />
-                <TextBlock x:Name="AzureKeySummary" Margin="0,0,0,4" Foreground="Gray" />
-                <PasswordBox x:Name="AzureKeyBox" Width="350" />
-                <TextBlock Text="Leave blank to keep the existing key." Margin="0,4,0,0" Foreground="Gray" FontStyle="Italic" />
-            </StackPanel>
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem Content="About" TargetPageType="{x:Type pages:AboutPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Info24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.FooterMenuItems>
+        </ui:NavigationView>
 
-            <StackPanel x:Name="WhisperPanel" Orientation="Vertical" Margin="0,8,0,0" Visibility="Collapsed">
-                <TextBlock Text="Whisper model" Margin="0,0,0,4" />
-                <ComboBox x:Name="WhisperModelCombo" Width="220">
-                    <ComboBoxItem x:Name="WhisperTinyItem" Content="tiny.en (fast)" Tag="Tiny" />
-                    <ComboBoxItem x:Name="WhisperBaseItem" Content="base.en (better accuracy)" Tag="Base" />
-                </ComboBox>
-
-                <TextBlock Text="Whisper local build" Margin="8,8,0,4" />
-                <TextBlock x:Name="WhisperBuildInfoText" TextWrapping="Wrap" Foreground="Gray" />
-            </StackPanel>
-        </StackPanel>
-
-        <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0,0,0,12">
-            <TextBlock Text="Push-to-talk hotkey" FontWeight="Bold" Margin="0,0,0,4" />
-            <DockPanel>
-                <TextBox x:Name="HotkeyTextBox" Width="250" IsReadOnly="True" PreviewKeyDown="HotkeyTextBox_PreviewKeyDown" />
-                <Button Content="Change" Width="80" Margin="8,0,0,0" Click="ChangeHotkey_Click" />
-            </DockPanel>
-        </StackPanel>
-
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="Save" Width="80" Margin="0,0,8,0" Click="Save_Click" />
-            <Button Content="Cancel" Width="80" Click="Cancel_Click" />
-        </StackPanel>
-
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
-            <TextBlock>
+        <DockPanel Grid.Row="2" Margin="16" LastChildFill="False">
+            <TextBlock VerticalAlignment="Center">
                 <Run Text="If you enjoy VoxThisWay, you can " />
                 <Hyperlink NavigateUri="https://buymeacoffee.com/spudds" RequestNavigate="SupportLink_RequestNavigate">
                     buy the author a coffee
                 </Hyperlink>
                 <Run Text="." />
             </TextBlock>
-        </StackPanel>
+
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Save" Width="90" Margin="0,0,8,0" Click="Save_Click" />
+                <Button Content="Cancel" Width="90" Click="Cancel_Click" />
+            </StackPanel>
+        </DockPanel>
     </Grid>
-</Window>
+</ui:FluentWindow>

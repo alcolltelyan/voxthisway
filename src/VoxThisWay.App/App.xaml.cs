@@ -22,6 +22,7 @@ using VoxThisWay.Services.Secrets;
 using VoxThisWay.Services.Tray;
 using VoxThisWay.Services.Text;
 using VoxThisWay.Services.Transcription;
+using Wpf.Ui.Appearance;
 
 namespace VoxThisWay.App;
 
@@ -34,9 +35,13 @@ public partial class App : Application
     private IHost? _host;
     private System.Windows.Media.MediaPlayer? _chimePlayer;
 
+    public static IServiceProvider? Services { get; private set; }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        ApplicationThemeManager.ApplySystemTheme();
 
         // Single-instance guard: prevent multiple VoxThisWay tray processes.
         var mutexName = "Global\\VoxThisWay.App.SingleInstance";
@@ -58,6 +63,7 @@ public partial class App : Application
         ConfigureLogging();
         _host = BuildHost();
         _host.Start();
+        Services = _host.Services;
 
         // Initialize chime sound for push-to-talk start, if present.
         try
@@ -130,11 +136,13 @@ public partial class App : Application
                 var speechOptions = _host.Services.GetRequiredService<IOptions<SpeechEngineOptions>>();
                 var whisperOptions = _host.Services.GetRequiredService<IOptions<WhisperLocalOptions>>();
                 var azureCredentialStore = _host.Services.GetRequiredService<IAzureSpeechCredentialStore>();
+                var audioCaptureService = _host.Services.GetRequiredService<IAudioCaptureService>();
 
                 var window = new OnboardingWindow(
                     speechOptions,
                     whisperOptions,
                     azureCredentialStore,
+                    audioCaptureService,
                     settingsStore,
                     OpenSettings)
                 {
@@ -284,11 +292,6 @@ public partial class App : Application
                 }
                 transcriptCoordinator.Reset();
             }
-            else
-            {
-                _ = textInjectionService.InjectTextAsync(" ");
-                textInjectionService.Reset();
-            }
         };
 
         listeningService.ProcessingStateChanged += (_, isProcessing) =>
@@ -322,6 +325,7 @@ public partial class App : Application
 
         var mainWindow = new MainWindow();
         mainWindow.Hide();
+        SystemThemeWatcher.Watch(mainWindow);
 
         // Show onboarding wizard on first run (or until disabled).
         try
@@ -396,13 +400,9 @@ public partial class App : Application
 
         try
         {
-            var audioCaptureService = _host.Services.GetRequiredService<IAudioCaptureService>();
-            var settingsStore = _host.Services.GetRequiredService<IUserSettingsStore>();
             var hotkeyService = _host.Services.GetRequiredService<IHotkeyService>();
-            var azureCredentialStore = _host.Services.GetRequiredService<IAzureSpeechCredentialStore>();
-            var whisperOptions = _host.Services.GetRequiredService<IOptions<WhisperLocalOptions>>();
 
-            var window = new SettingsWindow(audioCaptureService, settingsStore, azureCredentialStore, whisperOptions.Value)
+            var window = new SettingsWindow()
             {
                 WindowStartupLocation = WindowStartupLocation.CenterScreen
             };
@@ -449,7 +449,9 @@ public partial class App : Application
     private sealed class TranscriptCoordinator
     {
         private readonly ITextInjectionService _textInjectionService;
+        private readonly object _gate = new();
         private string _finalizedText = string.Empty;
+        private string _lastFinalNormalized = string.Empty;
 
         public TranscriptCoordinator(ITextInjectionService textInjectionService)
         {
@@ -458,24 +460,37 @@ public partial class App : Application
 
         public void HandleTranscript(TranscriptSegment segment)
         {
-            var pending = segment.IsFinal
-                ? AppendFinal(segment.Text)
-                : _finalizedText + segment.Text;
+            string pending;
+            lock (_gate)
+            {
+                pending = segment.IsFinal
+                    ? AppendFinal(segment.Text)
+                    : _finalizedText + segment.Text;
+            }
 
             _ = _textInjectionService.InjectTextAsync(pending);
         }
 
         public void Reset()
         {
-            _finalizedText = string.Empty;
-            _textInjectionService.Reset();
+            lock (_gate)
+            {
+                _finalizedText = string.Empty;
+                _lastFinalNormalized = string.Empty;
+                _textInjectionService.Reset();
+            }
         }
 
         private string AppendFinal(string text)
         {
             if (!string.IsNullOrWhiteSpace(text))
             {
-                _finalizedText = $"{_finalizedText}{text.Trim()} ".Replace("  ", " ");
+                var normalized = text.Trim();
+                if (!string.Equals(normalized, _lastFinalNormalized, StringComparison.Ordinal))
+                {
+                    _finalizedText = $"{_finalizedText}{normalized} ".Replace("  ", " ");
+                    _lastFinalNormalized = normalized;
+                }
             }
 
             return _finalizedText;

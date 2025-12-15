@@ -1,0 +1,36 @@
+<Page x:Class="VoxThisWay.App.OnboardingPages.NextStepsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Next steps"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+
+    <StackPanel Margin="24" Orientation="Vertical">
+        <TextBlock Text="Step 3 of 3 — You’re ready" FontSize="18" FontWeight="SemiBold" />
+
+        <TextBlock Margin="0,12,0,0" TextWrapping="Wrap">
+            VoxThisWay runs from your system tray. Hold your push-to-talk hotkey to dictate into whatever app you’re typing in.
+        </TextBlock>
+
+        <TextBlock Margin="0,12,0,0" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+            Recommended next action: click “Open Settings” and confirm your microphone device + hotkey.
+        </TextBlock>
+
+        <StackPanel Margin="0,12,0,0">
+            <TextBlock Text="In Settings you can:" TextWrapping="Wrap" />
+            <TextBlock Text="- Choose the input device and test it" TextWrapping="Wrap" Margin="0,4,0,0" />
+            <TextBlock Text="- Pick your speech engine (Whisper offline or Azure)" TextWrapping="Wrap" Margin="0,4,0,0" />
+            <TextBlock Text="- Change the push-to-talk hotkey" TextWrapping="Wrap" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <TextBlock Text="You can reopen this wizard later from the tray menu (Onboarding…)." TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+
+        <TextBlock Margin="0,12,0,0">
+            <Run Text="If you enjoy VoxThisWay, you can " />
+            <Hyperlink NavigateUri="https://buymeacoffee.com/spudds" RequestNavigate="SupportLink_RequestNavigate">
+                buy the author a coffee
+            </Hyperlink>
+            <Run Text="." />
+        </TextBlock>
+    </StackPanel>
+</Page>

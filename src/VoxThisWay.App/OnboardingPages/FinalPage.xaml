@@ -1,0 +1,35 @@
+<Page x:Class="VoxThisWay.App.OnboardingPages.FinalPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Finish"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Orientation="Vertical">
+            <TextBlock Text="Step 5 of 5 — All set" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                Review your selections below. Click Finish to save your onboarding preference.
+            </TextBlock>
+
+            <ui:Card Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="Summary" FontSize="16" FontWeight="SemiBold" />
+                    <TextBlock x:Name="SummaryText" Margin="0,12,0,0" TextWrapping="Wrap" />
+                </StackPanel>
+            </ui:Card>
+
+            <ui:Card Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="Final tips" FontSize="16" FontWeight="SemiBold" />
+                    <StackPanel Margin="0,12,0,0">
+                        <TextBlock Text="- VoxThisWay runs from the system tray." TextWrapping="Wrap" />
+                        <TextBlock Text="- Hold your hotkey to dictate into any app." TextWrapping="Wrap" Margin="0,4,0,0" />
+                        <TextBlock Text="- If dictation is empty, check your microphone device in Settings." TextWrapping="Wrap" Margin="0,4,0,0" />
+                        <TextBlock Text="- If the hotkey doesn’t work, choose a different combo (some apps reserve certain keys)." TextWrapping="Wrap" Margin="0,4,0,0" />
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

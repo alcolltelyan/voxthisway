@@ -1,0 +1,29 @@
+<Page x:Class="VoxThisWay.App.OnboardingPages.MicrophonePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Microphone"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+
+    <StackPanel Margin="24" Orientation="Vertical">
+        <TextBlock Text="Step 2 of 5 — Choose your microphone" FontSize="18" FontWeight="SemiBold" />
+        <TextBlock Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+            This device will be used for speech capture. If dictation feels “silent” later, this is the first place to check.
+        </TextBlock>
+
+        <ui:Card Margin="0,16,0,0">
+            <StackPanel>
+                <TextBlock Text="Input device" FontSize="16" FontWeight="SemiBold" />
+
+                <DockPanel Margin="0,12,0,0">
+                    <ComboBox x:Name="DeviceCombo" Width="420" DisplayMemberPath="DisplayName" SelectionChanged="DeviceCombo_SelectionChanged" />
+                    <ui:Button x:Name="TestButton" Content="Test" Width="90" Margin="12,0,0,0" Click="TestDevice_Click" />
+                </DockPanel>
+
+                <TextBlock Margin="0,12,0,0" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                    Tip: Choose the mic you speak into most often (headset mic usually gives better results than laptop mic).
+                </TextBlock>
+            </StackPanel>
+        </ui:Card>
+    </StackPanel>
+</Page>

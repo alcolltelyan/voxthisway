@@ -1,0 +1,43 @@
+<Page x:Class="VoxThisWay.App.SettingsPages.SpeechSettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Speech">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Orientation="Vertical">
+
+            <ui:Card Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Speech engine" FontSize="16" FontWeight="SemiBold" />
+
+                    <StackPanel Margin="0,12,0,0">
+                        <ComboBox x:Name="EngineCombo" Width="360" SelectionChanged="EngineCombo_SelectionChanged">
+                            <ComboBoxItem x:Name="WhisperEngineItem" Content="Whisper (local)" Tag="WhisperLocal" />
+                            <ComboBoxItem x:Name="AzureEngineItem" Content="Azure Speech" Tag="Azure" />
+                        </ComboBox>
+
+                        <StackPanel x:Name="AzurePanel" Orientation="Vertical" Margin="0,12,0,0" Visibility="Collapsed">
+                            <TextBlock Text="Azure Speech API key" Margin="0,0,0,4" />
+                            <TextBlock x:Name="AzureKeySummary" Margin="0,0,0,4" Foreground="Gray" />
+                            <PasswordBox x:Name="AzureKeyBox" Width="360" PasswordChanged="AzureKeyBox_PasswordChanged" />
+                            <TextBlock Text="Leave blank to keep the existing key." Margin="0,4,0,0" Foreground="Gray" FontStyle="Italic" />
+                        </StackPanel>
+
+                        <StackPanel x:Name="WhisperPanel" Orientation="Vertical" Margin="0,12,0,0" Visibility="Collapsed">
+                            <TextBlock Text="Whisper model" Margin="0,0,0,4" />
+                            <ComboBox x:Name="WhisperModelCombo" Width="240" SelectionChanged="WhisperModelCombo_SelectionChanged">
+                                <ComboBoxItem x:Name="WhisperTinyItem" Content="tiny.en (fast)" Tag="Tiny" />
+                                <ComboBoxItem x:Name="WhisperBaseItem" Content="base.en (better accuracy)" Tag="Base" />
+                            </ComboBox>
+
+                            <TextBlock Text="Whisper local build" Margin="0,12,0,4" />
+                            <TextBlock x:Name="WhisperBuildInfoText" TextWrapping="Wrap" Foreground="Gray" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

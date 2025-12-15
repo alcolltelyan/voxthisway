@@ -1,0 +1,46 @@
+<Page x:Class="VoxThisWay.App.OnboardingPages.ChecksPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Checks"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Orientation="Vertical">
+
+            <TextBlock Text="Step 4 of 5 — Setup checks" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                Green means ready. If something is not ready, use the message below to fix it, then click “Re-run checks”.
+            </TextBlock>
+
+            <GroupBox Header="Whisper local (offline engine)" Margin="0,16,0,12" Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                <StackPanel Margin="10">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock x:Name="WhisperStatusIcon"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Margin="0,0,8,0" />
+                        <TextBlock x:Name="WhisperStatusText" TextWrapping="Wrap" />
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="Azure Speech (cloud engine, optional)" Margin="0,0,0,12" Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                <StackPanel Margin="10">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock x:Name="AzureStatusIcon"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Margin="0,0,8,0" />
+                        <TextBlock x:Name="AzureStatusText" TextWrapping="Wrap" />
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <TextBlock Margin="0,4,0,0" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                Tip: If you don’t plan to use Azure, you can skip it and keep Whisper as your speech engine.
+            </TextBlock>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

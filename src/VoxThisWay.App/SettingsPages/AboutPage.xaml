@@ -1,0 +1,30 @@
+<Page x:Class="VoxThisWay.App.SettingsPages.AboutPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="About">
+
+    <StackPanel Margin="24" Orientation="Vertical">
+        <ui:Card>
+            <StackPanel>
+                <TextBlock Text="About" FontSize="16" FontWeight="SemiBold" />
+
+                <StackPanel Margin="0,12,0,0">
+                    <TextBlock x:Name="VersionText" />
+                    <TextBlock Margin="0,8,0,0">
+                        <Run Text="Project home: " />
+                        <Hyperlink NavigateUri="https://github.com/alcolltelyan/voxthisway" RequestNavigate="SupportLink_RequestNavigate">
+                            GitHub
+                        </Hyperlink>
+                    </TextBlock>
+                    <TextBlock Margin="0,8,0,0">
+                        <Run Text="Support: " />
+                        <Hyperlink NavigateUri="https://buymeacoffee.com/spudds" RequestNavigate="SupportLink_RequestNavigate">
+                            Buy me a Coffee
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </ui:Card>
+    </StackPanel>
+</Page>
